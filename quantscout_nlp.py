@@ -4,8 +4,6 @@ import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import yfinance as yf
 import time
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 
 st.set_page_config(page_title="QuantScout Live Monitor", layout="wide")
 st.title("🛡️ QuantScout NLP Institutional Live Monitor")
@@ -14,47 +12,26 @@ analyzer = SentimentIntensityAnalyzer()
 
 # Secrets
 try:
-    ALPACA_KEY = st.secrets["api_keys"]["alpaca_key"]
-    ALPACA_SECRET = st.secrets["api_keys"]["alpaca_secret"]
     TIINGO_KEY = st.secrets["api_keys"]["tiingo_key"]
-    SENDGRID_KEY = st.secrets["api_keys"]["SENDGRID_API_KEY"]
-    FROM_EMAIL = st.secrets["api_keys"]["FROM_EMAIL"]
-    TO_EMAIL = st.secrets["api_keys"]["TO_EMAIL"]
+    TELEGRAM_TOKEN = st.secrets["api_keys"]["TELEGRAM_BOT_TOKEN"]
+    TELEGRAM_CHAT_ID = st.secrets["api_keys"]["TELEGRAM_CHAT_ID"]
 except KeyError as e:
-    st.error(f"Missing secret: {e}. Add in Settings > Secrets.")
+    st.error(f"Missing secret: {e}")
     st.stop()
 
-def send_email(df):
-    actionable = df[df.Decision != "HOLD"]
-    if actionable.empty:
-        subject = "QuantScout: No Actionable Signals Today"
-        body = "All holdings neutral — no strong BUY/SELL signals."
-    else:
-        subject = f"QuantScout ALERT: {len(actionable)} Actionable Signals!"
-        body = actionable.to_html(index=False)
-    
-    message = Mail(
-        from_email=FROM_EMAIL,
-        to_emails=TO_EMAIL,
-        subject=subject,
-        html_content=f"<h2>QuantScout Daily Report</h2>{body}"
-    )
+def send_telegram(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
     try:
-        sg = SendGridAPIClient(SENDGRID_KEY)
-        sg.send(message)
-        st.success("Email alert sent!")
-    except Exception as e:
-        st.error(f"Email failed: {e}")
+        requests.post(url, data=payload, timeout=10)
+    except:
+        pass  # Silent fail if offline
 
-# Sidebar
 with st.sidebar:
     st.header("Controls")
     auto_refresh = st.checkbox("Auto Live Mode", value=True)
     refresh_sec = st.slider("Refresh (sec)", 5, 60, 10)
     user_tickers = st.text_input("Tickers", value="TSLA SNOW DUOL ORCL RDDT SHOP MU DASH ARM RKLB")
-    if st.button("Send Email Alert Now"):
-        df = scan()  # We'll define scan below
-        send_email(df)
 
 tickers = [t.strip().upper() for t in user_tickers.replace(",", " ").split() if t.strip()]
 
@@ -67,15 +44,14 @@ def get_tiingo_news(symbol):
             desc = resp[0].get('description', '')
             text = title + " " + desc
             score = analyzer.polarity_scores(text)['compound']
-            return score, title[:100]
+            return score, title[:120]
     except:
         pass
     return 0.0, "No news"
 
 def get_price(symbol):
     try:
-        ticker = yf.Ticker(symbol)
-        data = ticker.info
+        data = yf.Ticker(symbol).info
         return data.get('regularMarketPrice') or data.get('currentPrice') or data.get('previousClose')
     except:
         return None
@@ -99,7 +75,20 @@ def scan():
 
 df = scan()
 
-# Display same as before...
+# Send Telegram Alert on Strong Signals
+strong_signals = df[(df.Decision != "HOLD") & (df.Confidence >= 60)]
+if not strong_signals.empty and "last_alert" not in st.session_state:
+    alert_msg = "🚨 <b>QuantScout Strong Signals!</b>\n\n"
+    for _, row in strong_signals.iterrows():
+        alert_msg += f"• <b>{row.Decision}</b> {row.Symbol} ({row.Confidence}% conf)\n"
+        alert_msg += f"   Sentiment: {row.Sentiment} | Price: ${row.Price}\n"
+        alert_msg += f"   {row.TopNews}\n\n"
+    send_telegram(alert_msg)
+    st.session_state.last_alert = True
+elif strong_signals.empty:
+    st.session_state.last_alert = False  # Reset if no signals
+
+# Display
 cols = st.columns(4)
 cols[0].metric("Tickers", len(df))
 cols[1].metric("BUY", len(df[df.Decision=="BUY"]))
