@@ -5,4 +5,4 @@ pandas
 vaderSentiment
 alpaca-py
 plotly
-sendgrid
+sendgrid  # Keep for email
