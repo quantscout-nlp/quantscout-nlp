@@ -1,8 +1,9 @@
-streamlit
-yfinance
-requests
-pandas
-vaderSentiment
-alpaca-py
-plotly
-sendgrid  # Keep for email
+torch>=2.9.0
+torchvision>=0.10.0
+torchaudio>=2.9.0
+transformers>=4.45.0
+alpaca-py>=0.43.0
+streamlit>=1.39.0
+pandas>=2.2.0
+numpy>=2.0.0
+plotly>=5.18.0
