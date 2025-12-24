@@ -1,110 +1,64 @@
-import streamlit as st
-import pandas as pd
-import requests
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-import yfinance as yf
-import time
+"""
+quantscout_nlp.py
+Institutional-Grade Configuration & Constants
+QuantScout NLP Sentiment Tracker – December 2025 Expansion
+"""
 
-st.set_page_config(page_title="QuantScout Live Monitor", layout="wide")
-st.title("🛡️ QuantScout NLP Institutional Live Monitor")
+from __future__ import annotations
 
-analyzer = SentimentIntensityAnalyzer()
+from typing import List, Final
 
-# Secrets
-try:
-    TIINGO_KEY = st.secrets["api_keys"]["tiingo_key"]
-    TELEGRAM_TOKEN = st.secrets["api_keys"]["TELEGRAM_BOT_TOKEN"]
-    TELEGRAM_CHAT_ID = st.secrets["api_keys"]["TELEGRAM_CHAT_ID"]
-except KeyError as e:
-    st.error(f"Missing secret: {e}")
-    st.stop()
+# ==================== INSTITUTIONAL TICKER UNIVERSE (15 Symbols) ====================
+TICKER_UNIVERSE: Final[List[str]] = [
+    "TSLA",   # EV / AI leader
+    "SNOW",   # Cloud data warehousing
+    "DUOL",   # EdTech growth
+    "ORCL",   # Enterprise cloud transition
+    "RDDT",   # Social media / advertising
+    "SHOP",   # E-commerce platform
+    "MU",     # Memory semiconductors
+    "DASH",   # Food delivery / logistics
+    "ARM",    # Chip architecture
+    "RKLB",   # Space launch
+    "LEU",    # Uranium enrichment (nuclear tailwind)
+    "OKLO",   # Small modular reactors
+    "PLTR",   # Data analytics / government contracts
+    "NVDA",   # AI GPU dominance
+    "CRWD",   # Cybersecurity leader
+]
 
-def send_telegram(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
-    try:
-        requests.post(url, data=payload, timeout=10)
-    except:
-        pass  # Silent fail if offline
+assert len(TICKER_UNIVERSE) == 15, "Ticker universe must contain exactly 15 symbols"
 
-with st.sidebar:
-    st.header("Controls")
-    auto_refresh = st.checkbox("Auto Live Mode", value=True)
-    refresh_sec = st.slider("Refresh (sec)", 5, 60, 10)
-    user_tickers = st.text_input("Tickers", value="TSLA SNOW DUOL ORCL RDDT SHOP MU DASH ARM RKLB")
+# ==================== RISK & STRATEGY PARAMETERS ====================
+MAX_POSITION_PCT_EQUITY: Final[float] = 0.12   # Max 12% of equity per name
+MAX_TOTAL_LONG_EXPOSURE: Final[float] = 1.00   # Long-only max 100%
+CONFIDENCE_THRESHOLD_BUY: Final[float] = 0.65
+CONFIDENCE_THRESHOLD_SELL: Final[float] = 0.70  # Slightly higher bar to exit
+MIN_HEADLINES_REQUIRED: Final[int] = 5         # Avoid thin news days
 
-tickers = [t.strip().upper() for t in user_tickers.replace(",", " ").split() if t.strip()]
+# ==================== SENTIMENT MAPPING ====================
+SENTIMENT_LABEL_MAP: Final[dict[str, str]] = {
+    "positive": "positive",
+    "negative": "negative",
+    "neutral": "neutral",
+}
 
-def get_tiingo_news(symbol):
-    url = f"https://api.tiingo.com/tiingo/news?tickers={symbol}&token={TIINGO_KEY}"
-    try:
-        resp = requests.get(url, timeout=10).json()
-        if resp:
-            title = resp[0]['title']
-            desc = resp[0].get('description', '')
-            text = title + " " + desc
-            score = analyzer.polarity_scores(text)['compound']
-            return score, title[:120]
-    except:
-        pass
-    return 0.0, "No news"
+# ==================== DEFENSIVE ASSERTIONS ====================
+def validate_config() -> None:
+    """Runtime validation – fails fast on misconfiguration"""
+    assert 0.05 <= MAX_POSITION_PCT_EQUITY <= 0.20, "Position cap out of prudent range"
+    assert 0.50 <= CONFIDENCE_THRESHOLD_BUY <= 0.80, "Buy threshold unreasonable"
+    assert CONFIDENCE_THRESHOLD_SELL >= CONFIDENCE_THRESHOLD_BUY, "Sell threshold must be >= buy"
 
-def get_price(symbol):
-    try:
-        data = yf.Ticker(symbol).info
-        return data.get('regularMarketPrice') or data.get('currentPrice') or data.get('previousClose')
-    except:
-        return None
+# Run validation on import
+validate_config()
 
-def scan():
-    results = []
-    for sym in tickers:
-        sentiment, news = get_tiingo_news(sym)
-        price = get_price(sym)
-        confidence = int(abs(sentiment) * 100)
-        decision = "BUY" if sentiment > 0.2 else "SELL" if sentiment < -0.2 else "HOLD"
-        results.append({
-            "Symbol": sym,
-            "Decision": decision,
-            "Confidence": confidence,
-            "Sentiment": round(sentiment, 3),
-            "Price": round(price, 2) if price else "N/A",
-            "TopNews": news
-        })
-    return pd.DataFrame(results)
-
-df = scan()
-
-# Send Telegram Alert on Strong Signals
-strong_signals = df[(df.Decision != "HOLD") & (df.Confidence >= 60)]
-if not strong_signals.empty and "last_alert" not in st.session_state:
-    alert_msg = "🚨 <b>QuantScout Strong Signals!</b>\n\n"
-    for _, row in strong_signals.iterrows():
-        alert_msg += f"• <b>{row.Decision}</b> {row.Symbol} ({row.Confidence}% conf)\n"
-        alert_msg += f"   Sentiment: {row.Sentiment} | Price: ${row.Price}\n"
-        alert_msg += f"   {row.TopNews}\n\n"
-    send_telegram(alert_msg)
-    st.session_state.last_alert = True
-elif strong_signals.empty:
-    st.session_state.last_alert = False  # Reset if no signals
-
-# Display
-cols = st.columns(4)
-cols[0].metric("Tickers", len(df))
-cols[1].metric("BUY", len(df[df.Decision=="BUY"]))
-cols[2].metric("SELL", len(df[df.Decision=="SELL"]))
-cols[3].metric("HOLD", len(df[df.Decision=="HOLD"]))
-
-action = df[df.Decision != "HOLD"]
-if not action.empty:
-    st.subheader("🚀 Actionable Signals")
-    st.dataframe(action, use_container_width=True)
-
-st.subheader("Full Results")
-st.dataframe(df, use_container_width=True)
-
-st.download_button("Download CSV", df.to_csv(index=False), "quantscout_signals.csv")
-
-if auto_refresh:
-    time.sleep(refresh_sec)
-    st.rerun()
+__all__ = [
+    "TICKER_UNIVERSE",
+    "MAX_POSITION_PCT_EQUITY",
+    "MAX_TOTAL_LONG_EXPOSURE",
+    "CONFIDENCE_THRESHOLD_BUY",
+    "CONFIDENCE_THRESHOLD_SELL",
+    "MIN_HEADLINES_REQUIRED",
+    "SENTIMENT_LABEL_MAP",
+]
