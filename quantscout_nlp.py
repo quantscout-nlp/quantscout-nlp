@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-QuantScout PRO TERMINAL (v5.0 - AUTO-PILOT ENABLED)
+QuantScout PRO TERMINAL (v5.5 - AUTO-PILOT EDITION)
 Location: D:\AdvNLP&AEGIS_Model_LIVE\quantscout_nlp.py
 """
 
@@ -35,7 +35,7 @@ except ImportError:
     CloudBridge = None
 
 # ==========================================
-# 👇 PASTE YOUR KEYS HERE 👇
+# 👇 YOUR KEYS ARE PRE-LOADED 👇
 # ==========================================
 MY_ALPACA_ID     = "AKMQPW0T4F3BMRVA25VB"   
 MY_ALPACA_SECRET = "QPSlZIJcV0S8vwc7GWB45Vorz527M5rEjhpzb4qi"   
@@ -59,7 +59,7 @@ except Exception:
 # Utils
 # =========================
 SESSION = requests.Session()
-SESSION.headers.update({"user-agent": "QuantScoutEngine/5.0"})
+SESSION.headers.update({"user-agent": "QuantScoutEngine/5.5"})
 
 def to_float(x: Any) -> Optional[float]:
     try: return float(x) if x is not None else None
@@ -96,7 +96,7 @@ def auto_update_sheet(buy_list):
     try:
         # 1. Authenticate using Streamlit Secrets
         if "gcp_service_account" not in st.secrets:
-            st.error("❌ GCP Secrets missing in Streamlit Cloud!")
+            # Silently fail on local dev, alert on cloud
             return
 
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -127,7 +127,8 @@ def auto_update_sheet(buy_list):
                 st.warning("⚠️ Bridge Cleared (No Buy Signals).")
             
     except Exception as e:
-        st.error(f"❌ BRIDGE FAILED: {str(e)}")
+        # Don't crash the app, just show a small error
+        st.toast(f"❌ Bridge Error: {str(e)[:50]}")
 
 # =========================
 # Fetchers
@@ -236,6 +237,7 @@ with st.sidebar:
         tiingo_key = st.text_input("Tiingo Key", value=get_key(MY_TIINGO_KEY, ["TIINGO_API_KEY"]), type="password")
     
     st.subheader("🤖 AUTO-PILOT")
+    # THE CRITICAL CHECKBOX
     enable_autopilot = st.checkbox("FULL AUTO-PILOT (Write to Drive)", value=False, help="If checked, BUY signals are sent to the Bot automatically every minute.")
     if enable_autopilot:
         st.session_state['auto_pilot_active'] = True
