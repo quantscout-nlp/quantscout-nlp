@@ -37,8 +37,8 @@ except ImportError:
 # ==========================================
 # 👇 YOUR KEYS ARE PRE-LOADED 👇
 # ==========================================
-MY_ALPACA_ID     = "AKMQPW0T4F3BMRVA25VB"   
-MY_ALPACA_SECRET = "QPSlZIJcV0S8vwc7GWB45Vorz527M5rEjhpzb4qi"   
+MY_ALPACA_ID     = "PKO6ZD72GHUNBPT26YY7JJTLUT"   
+MY_ALPACA_SECRET = "D8QDofcbqcDaybfYD45jdHFSXt1Yw3kQav5kyBWNimEs"   
 MY_MASSIVE_KEY   = "WPJc08p6Nqp39W05pBkNY6685DL2cqlc"   
 MY_TIINGO_KEY    = "bf96558968e66c6dbfa2d914b0370212b2b8a771"
 
@@ -396,3 +396,4 @@ if st.session_state['is_running']:
     st.rerun()     # Restart immediately
 else:
     st.info("System Standby. Click START in the sidebar to begin.")
+
