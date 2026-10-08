@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Grok Dave HITL — Oct 8, 2026 2:30 PM Strategy Sweep and Command Prompts</title>
+<style>
+  :root { --bg:#07090d; --card:#10141c; --line:#1c2430; --text:#e8edf4; --muted:#93a0b3; --amber:#f5c15c; --red:#f87171; --green:#34d399; --blue:#7dd3fc; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:22px 22px 72px; }
+  .badge { display:inline-block; background:#7a5a16; color:var(--amber); font-size:11px; font-weight:700; letter-spacing:.06em; padding:4px 10px; border-radius:999px; }
+  h1 { font-size:26px; margin:10px 0 6px; }
+  h2 { font-size:18px; margin:28px 0 8px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+  h3 { font-size:15px; margin:16px 0 6px; color:var(--blue); }
+  .meta, .lock { color:var(--muted); font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:10px 0; }
+  pre { background:#0b1018; border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; font-size:12.5px; line-height:1.45; color:#d7e3f4; }
+  .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--amber); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); }
+  code { color:var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">PAPER ONLY · v1.6 · 2:30 PM SWEEP</span>
+  <h1>Grok Dave HITL — 2:30 PM Strategy Sweep and Command Prompts</h1>
+  <p class="meta">Thursday, October 8, 2026, 2:30 PM ET · official overlay still Wednesday Oct 7 16:00 ET · replaces the <a href="https://docs.google.com/document/d/1YtIADtKcdQ7m1uMfDfYGtk6MRcs0kbheNqOhxRnWR1c/edit" target="_blank">1:58 / 2:00 PM sweep</a></p>
+  <p class="lock">Current Based on Robinhood.com and Webull.com Real Time market Data and Trading Bars. Robinhood quotes + positions for the book (account ••••7190). EPS/FCF/growth when available. VW-RSI(14) optional. Yahoo/Google fallbacks only. NOT SIP.</p>
+  <p class="lock">Official Wednesday, October 7, 2026 16:00 ET RTH close rebuilds SMA/MACD/Hist/RSI. HITL co-trading only through Oct 16. Human submits every order. No LIVE copy without 30-day net-positive paper. No Webull live margin. No RH Agentic. Backtest hold through 2026-10-16. Not trade advice.</p>
+  <p class="lock">Volume floor: RVOL20 >= 0.8x APPLIED (Webull RTH; borderline 0.72 to 0.88).</p>
+
+  <h2>Universe & Data</h2>
+  <div class="card">
+    <ul>
+      <li>Cap Recovery Watchlist 232-name FULL on Drive, plus nasdaq core (NVDA/GOOGL/GOOG/TSLA/AAPL/PLTR/AMZN/MU/APP/NFLX), plus RH book account ••••7190.</li>
+      <li>This 2:30 PM sweep is a strategy and prompt update, not a full 232 scan. Morning pack scanned about 65 of 232. Unscanned names stay NOT_SCANNED. First full 232 scan is the next weekday 08:30.</li>
+      <li>Data order: Webull bars → RH quotes/positions → Yahoo → Google. Desktop official score waits for the 17:10 pack, then scores at 17:40.</li>
+      <li>Paper account: <a href="https://drive.google.com/file/d/1y7orVtwy4k_HUmt26I2io9c2mUG7ns5u/view" target="_blank">webull_paper_account_LATEST.csv</a> is a STATUS row, NO_PAPER_ACCOUNT_AUTHORIZED, as of 2026-10-08 11:32 ET. No paper fills.</li>
+      <li>Wash-sale silent until 2026-10-17: STX WDC AVGO LRCX VST NBIS GPRO COHR FN.</li>
+    </ul>
+  </div>
+
+  <h2>Strategy sweep — locked in AGENT.md / SKILL.md / README.md v1.6</h2>
+  <div class="card">
+    <p>Source of truth locked 10:52 ET today. The 08:33 share packs were v1.5 and are restated, not reused as tickets. No other threshold changed. Shadow desktop gates stay shadow.</p>
+    <ul>
+      <li><strong>Rule 2 / Tier 1:</strong> SMA9 > SMA20 > SMA50 > SMA200, MACD > 0, Hist0 > 0, battery +2 to +4, and RVOL20 >= 0.80 on Webull RTH. Exactly 0.80 passes. Print two decimals and <code>vol_source=WEBULL_RTH</code>. VOL_BORDERLINE is a flag, not a demotion: 0.80–0.88 still passes; 0.72–0.79 fails and is flagged. At 08:30 score the last completed RTH session only. Intraday volume never makes Paper.</li>
+      <li><strong>Rule 1 / Cap:</strong> DD 5–60% over 30–120 days, price above SMA20 and SMA50, SMA20 > SMA50, Hist0 > 0, RSI 40–65 and rising. AK Combined PASS required after 09:35. Momentum skips AK. AK-S at 08:30 = PREMARKET_NOT_APPLICABLE.</li>
+      <li><strong>Tier 2:</strong> full stack is met and another gate fails. Fail-gate tokens: BAT +1 / BAT 0 / BAT -1 / Hist0 <= 0 / RSI LATE / RSI FAIL / failed-reclaim / no SMA200. STACK N is Watch / Hold, not Tier 2.</li>
+      <li><strong>NEWS token</strong> on every Tier 1 and Tier 2 card: NEWS_CONFIRMED / NEWS_STALE / NEWS_ABSENT / NEWS_NOT_SEARCHED. Not a buy gate.</li>
+      <li><strong>Stops:</strong> under SMA20 for momentum, under SMA50 for recovery. Close under that line on a held name is an exit candidate. Unscanned held names = STOP_NOT_COMPUTED.</li>
+      <li><strong>Paper account row, exact 14 fields:</strong> <code>asof_et,account_mask,account_class,row_type,symbol,qty,avg_cost,last,market_value,cash_balance,net_liquidation,unrealized_pl,source,note</code>. Empty position fields stay empty. Do not drop the column. unrealized_pl is empty or 0.00 on non-position rows.</li>
+    </ul>
+  </div>
+
+  <h2>2:30 PM tape vs Wednesday official stack</h2>
+  <p>Live last is Webull RTH at about 2:29 ET, cross-checked with Robinhood quotes. SMA levels are Wednesday’s official close. A name still above SMA20 is not a new Tier 1 card. RVOL20 is not rescored on partial volume.</p>
+  <table>
+    <thead><tr><th>Name</th><th>Wed close</th><th>SMA20</th><th>2:30 last</th><th>vs Wed</th><th>Read</th></tr></thead>
+    <tbody>
+      <tr><td>SPY</td><td>777.22</td><td>765.89</td><td>773.49</td><td class="bad">−0.48%</td><td>Still above SMA20. Soft fade.</td></tr>
+      <tr><td>QQQ</td><td>757.73</td><td>733.52</td><td>748.43</td><td class="bad">−1.23%</td><td>Above SMA20. Tier 2 BAT +1.</td></tr>
+      <tr><td>MSFT</td><td>529.76</td><td>506.62</td><td>523.11</td><td class="bad">−1.26%</td><td>Above SMA20. RVOL not rescored.</td></tr>
+      <tr><td>SMCI</td><td>44.94</td><td>40.81</td><td>42.86</td><td class="bad">−4.64%</td><td>Above SMA20. Hard fade. Not a chase.</td></tr>
+      <tr><td>PLTR</td><td>194.12</td><td>183.26</td><td>197.78</td><td class="ok">+1.88%</td><td>Held the open gap. High 204.44 given back.</td></tr>
+      <tr><td>NVDA</td><td>237.47</td><td>225.58</td><td>231.41</td><td class="bad">−2.55%</td><td>Above SMA20. BAT +1, no new Paper.</td></tr>
+      <tr><td>AMD</td><td>645.86</td><td>587.62</td><td>621.15</td><td class="bad">−3.83%</td><td>Above SMA20. RSI lock stands. No new Cap Paper.</td></tr>
+      <tr><td>LITE</td><td>1111.07</td><td>966.10</td><td>1058.12</td><td class="bad">−4.77%</td><td>Above SMA20. Gap-down tape. No add.</td></tr>
+      <tr><td>GOOGL</td><td>350.50</td><td>344.48</td><td>347.25</td><td class="bad">−0.93%</td><td class="warn">STACK N. Watch / Hold.</td></tr>
+      <tr><td>MU</td><td>1088.00</td><td>1032.65</td><td>1048.59</td><td class="bad">−3.62%</td><td>Barely above SMA20. Hist was RED. No new size.</td></tr>
+      <tr><td>HOOD</td><td>109.51</td><td>114.99</td><td>107.36</td><td class="bad">−1.96%</td><td class="bad">Under SMA20. Exit candidate.</td></tr>
+      <tr><td>CRWD</td><td>265.44</td><td>251.59</td><td>265.40</td><td class="bad">−0.02%</td><td>Above SMA20. BAT +1. No new size.</td></tr>
+      <tr><td>AAPL</td><td>336.67</td><td>—</td><td>339.76</td><td class="ok">+0.92%</td><td>Already large. No new size.</td></tr>
+    </tbody>
+  </table>
+  <div class="card">Suggested CAP_MR tradable at 2:30 PM: none. No confirmed Tier 1 until RVOL20 is printed on the official completed session. HOOD remains the only sleeve name under SMA20. Human submits. No order from this sweep.</div>
+
+  <h2>Daily RTH step-by-step command prompts</h2>
+  <p>Paste one prompt per session. Replace the ticker list. Max 5 names on a LINE / PAPER / SIZE / MACD prompt. The 08:30 pack is the only one that scans all 232.</p>
+
+  <h3>1. 08:30 ET — premarket. Official close only. Full 232.</h3>
+  <pre>HITL 0830 PREMARKET PACK
+Load capitulation-momentum-rules v1.6.
+Stamp weekday + date + time ET.
+Current Based on Robinhood.com and Webull.com Real Time market Data and Trading Bars. Robinhood quotes + positions for the book (account ••••7190). EPS/FCF/growth when available. VW-RSI(14) optional. Yahoo/Google fallbacks only. NOT SIP.
+Official prior 16:00 ET close only. Do not rebuild SMA/MACD/Hist/RSI off premarket.
+Scan all 232. Print N of 232 scanned. Unscanned = NOT_SCANNED.
+Volume floor: RVOL20 >= 0.8x APPLIED (Webull RTH; borderline 0.72 to 0.88). Score last completed RTH session only. vol_source=WEBULL_RTH.
+AK-S = PREMARKET_NOT_APPLICABLE. AK Combined cannot PASS.
+Formats 1-3. Tier 1 needs stack + MACD>0 + Hist0>0 + BAT +2..+4 + RVOL20 >= 0.80.
+STACK N goes to Watch / Hold. NEWS token on every Tier 1 and Tier 2 card.
+RH Sleeve after Format 3. Held-name stop block. STOP_NOT_COMPUTED if not scanned.
+webull_paper_account: write all 14 fields. unrealized_pl empty or 0.00 on non-position rows.
+No new Paper. Human submits.</pre>
+
+  <h3>2. 09:45 ET — open / gap hold. Do not rebuild the stack.</h3>
+  <pre>HITL 0945 OPEN GAP-HOLD
+Stamp + source line. Official stack stays yesterday's 16:00 close.
+For the focused pack and RH sleeve: gap up hold, gap up fail, gap down reclaim, gap down fail.
+AK-D and AK-S on Cap names only if 5-min RTH exists. Momentum skips AK.
+A green open is not a Tier 1 card. Intraday volume never makes Paper.
+Print pipe + CLOSE. No new Paper unless Rule 2 and RVOL20 already passed on the official bar and the open did not lose SMA20.
+Human submits.</pre>
+
+  <h3>3. 12:30 ET — midday. First pack under the v1.6 lock.</h3>
+  <pre>HITL 1230 MIDDAY
+Stamp + source line. Tape vs official daily stack.
+Print gap hold / fail / repair. Failed SMA20 reclaim = no add.
+Volume floor: RVOL20 >= 0.8x APPLIED (Webull RTH; borderline 0.72 to 0.88).
+RVOL20 on the last completed session, not today's partial volume.
+Formats 1-3. NEWS token. STACK N is Watch / Hold.
+Held name under SMA20 (Mom) or SMA50 (Cap) = exit candidate.
+Human submits. Paper first.</pre>
+
+  <h3>4. 14:30 ET — this report's check. Tape only.</h3>
+  <pre>HITL 1430 TAPE CHECK 1-5 TICKERS: MSFT SMCI PLTR NVDA HOOD
+Stamp + source line. Do not rebuild SMA/MACD/Hist/RSI.
+For each name: last vs official SMA20, gap result since the open, still above or under the stop.
+If last is under SMA20, print EXIT CANDIDATE. If still above, print HOLD TAPE — not a new Paper.
+RVOL20 not rescored on partial volume.
+Human submits.</pre>
+
+  <h3>5. 16:00 close — no score yet.</h3>
+  <pre>Session over. Do not run qualify. Overlay stays the prior official bar until the pack lands.</pre>
+
+  <h3>6. 17:00 ET — pending stamp only.</h3>
+  <pre>HITL 1700 PENDING
+Write OVERLAY_PENDING. Do not score yesterday's parquet as today's official book.
+Wait for the 17:10 CSV, parquet convert, and verify.</pre>
+
+  <h3>7. 17:10 ET — pack. Then 17:35 import. Then 17:40 official score.</h3>
+  <pre>HITL 1710 PACK
+Convert the official long CSV to webull_rth_bars_YYYYMMDD.parquet.
+Verify row count, last bar session date = today, no nulls.
+Upload parquet + zip + long CSV to Drive. Pack is incomplete without all three.
+Write webull_paper_account with all 14 fields.
+
+Desktop after Drive sync:
+Test-Path F:\LeanData\webull_rth_bars_YYYYMMDD.parquet
+If present and session date is today:
+  .\.venv\Scripts\python.exe -m src.qualify
+Else write OVERLAY_PENDING and retry at 17:45, then 21:00.
+Do not fall back to yesterday and call it official.</pre>
+
+  <h2>After-hours and weekend prompts</h2>
+
+  <h3>17:40 / after the pack — next-day preview</h3>
+  <pre>HITL POSTMARKET NEXT-DAY PREVIEW
+Stamp + source line. Rebuild SMA9/20/50/200, MACD, Hist, RSI, battery from today's 16:00 bar only.
+Print RVOL20 on today's completed Webull RTH volume. vol_source=WEBULL_RTH.
+Formats 1-3. Next-day setups at 1.0% or 1.5% risk off the close.
+AK-S not applicable after the close. No order from the preview.
+Human submits at the next cash open.</pre>
+
+  <h3>Saturday 10:00 — week review. No new Paper.</h3>
+  <pre>HITL SATURDAY 1000 WEEK REVIEW
+Friday official close only. No new Paper.
+Formats 1-3. RVOL20 on Friday's completed session.
+Weekend crypto marks are gap risk only, not a new SMA cross.</pre>
+
+  <h3>Sunday 20:00 — overnight preview. No new Paper.</h3>
+  <pre>HITL SUNDAY 2000 OVERNIGHT PREVIEW
+Levels vs Friday official close for 20:00-04:00 OVN and Monday 04:00-09:30 PRE.
+Gaps do not rebuild SMA / MACD / RSI. AK-S = PREMARKET_NOT_APPLICABLE.
+No new Paper. Monday 08:30 still classifies off Friday's bar.</pre>
+
+  <h2>1–5 ticker prompts (any RTH session)</h2>
+
+  <h3>LINE — one card per name, official close only.</h3>
+  <pre>HITL LINE 1-5 TICKERS: MSFT SMCI PLTR NVDA HOOD
+Stamp + source line. Official 16:00 close only.
+Add RVOL20 x.xx vol_source=WEBULL_RTH or RVOL_NOT_SCORED.
+Add NEWS token. STACK N is Watch / Hold.
+DECISION and WHY on each name. New Paper only if Rule 2 + RVOL20 >= 0.80, or Rule 1 + AK Combined after 09:35.</pre>
+
+  <h3>PAPER — gate only.</h3>
+  <pre>HITL PAPER GATE 1-5 TICKERS: MSFT SMCI PLTR
+Rule2 MOM: STACK Y/N | MACD>0 Y/N | Hist0>0 Y/N | BAT n | RVOL20 x.xx PASS/FAIL
+Rule1 CAP: px>20 Y/N px>50 Y/N 20>50 Y/N Hist0>0 Y/N RSI40-65 Y/N RSI rising Y/N DD5-60 Y/N AK Combined PASS/FAIL
+DOES NOT QUALIFY stays Watch.</pre>
+
+  <h3>SIZE — dry-run only. Do not size a fail.</h3>
+  <pre>HITL SIZE 1-5 TICKERS: MSFT SMCI
+EQUITY=180000 RISK=1.0
+STOP under SMA20 if Mom, else SMA50.
+If last is already under that SMA, SIZE BLOCKED.
+Human submits. Webull paper first. No paper account is authorized today.</pre>
+
+  <h3>MACD-HIST — does not grant Paper.</h3>
+  <pre>HITL MACD-HIST 1-5 TICKERS: MU MRVL TSM
+Official close only. PASS only if MACD>0 and Hist0>0.
+This command does not grant Paper.</pre>
+
+  <h2>Desktop twins (second opinion, not the book)</h2>
+  <pre>cd F:\HITL_Gates_Desktop_CommandPrompts_2026_Sept_19
+python hitl_gates.py line MSFT SMCI PLTR NVDA HOOD
+python hitl_gates.py paper MSFT SMCI PLTR
+python hitl_gates.py macd MU MRVL TSM
+python hitl_gates.py size MSFT --risk 1.0 --equity 180000</pre>
+  <p>Desktop Yahoo or LeanData bars can disagree with the Webull official stack. The web pack remains the session record. Do not copy a desktop PAPER tag to live. Cloud cannot write F:\.</p>
+
+  <h2>Source files</h2>
+  <div class="card">
+    <ul>
+      <li><a href="https://docs.google.com/document/d/1PH6n4sbArWy6fMUePcadGaNpT9v0KEVTZcEpFuiv24g/edit" target="_blank">Rendered interactive Doc (use this URL)</a></li>
+      <li><a href="https://docs.google.com/document/d/1YtIADtKcdQ7m1uMfDfYGtk6MRcs0kbheNqOhxRnWR1c/edit" target="_blank">Prior 2:00 PM sweep</a></li>
+      <li><a href="https://drive.google.com/file/d/1ux8Zg_jD_MnmMfe8KaR6m8iq9x9uj2f3/view" target="_blank">universe_232_tickers.csv</a></li>
+      <li><a href="https://docs.google.com/spreadsheets/d/1B6udWOs6uF-g1uC6I_-GBTS72E4I961t/edit" target="_blank">Cap Recovery Watchlist FULL</a></li>
+      <li><a href="https://drive.google.com/file/d/1y7orVtwy4k_HUmt26I2io9c2mUG7ns5u/view" target="_blank">webull_paper_account_LATEST.csv</a></li>
+      <li><a href="https://drive.google.com/file/d/1Tbigcw2l3kSjTLE7JC20eqrAmsbkNyUH/view" target="_blank">rh_book_7190_LATEST.csv</a></li>
+      <li><a href="https://drive.google.com/drive/folders/1NVrQ3C_8fJ5Z_k7IMlDHTOfUWyHkdVBg" target="_blank">HITL_gates_desktop_20260919 folder</a></li>
+      <li><a href="https://robinhood.com" target="_blank">Robinhood</a> · <a href="https://www.webull.com" target="_blank">Webull</a></li>
+    </ul>
+  </div>
+
+  <h2>Closer</h2>
+  <div class="card">
+    Next pack is 17:00 pending, then 17:10 pack, then 17:40 official score if today's parquet is on disk. No new Paper from this 2:30 PM sweep. Paper account remains NO_PAPER_ACCOUNT_AUTHORIZED. Human submits. Paper first. Not trade advice.
+  </div>
+</div>
+</body>
+</html>
