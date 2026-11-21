@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuantScout Paper Trading — Week 1 · Nov 09 – Nov 13, 2026</title>
+<style>
+  :root { --bg:#07090d; --card:#10141c; --card2:#0b1018; --line:#1c2430; --text:#e8edf4; --muted:#93a0b3; --amber:#f5c15c;
+           --pos:#3987e5; --neg:#e66767; --bench1:#d95926; --bench2:#199e70; --grid:#1a2230; --focus:#7dd3fc; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  .wrap { max-width:1120px; margin:0 auto; padding:22px 22px 72px; }
+  .badge { display:inline-block; background:#7a5a16; color:var(--amber); font-size:11px; font-weight:700; letter-spacing:.06em; padding:4px 10px; border-radius:999px; margin-right:6px; }
+  .badge.blue { background:#143a63; color:#9ccbff; }
+  h1 { font-size:26px; margin:10px 0 6px; line-height:1.25; }
+  h2 { font-size:18px; margin:34px 0 10px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+  h3 { font-size:15px; margin:14px 0 6px; color:var(--focus); }
+  .meta { color:var(--muted); font-size:13px; }
+  .lead { font-size:16.5px; max-width:900px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:10px 0; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin:14px 0; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .tl { color:var(--muted); font-size:12px; letter-spacing:.02em; }
+  .tv { font-size:24px; font-weight:700; margin:2px 0; font-variant-numeric:tabular-nums; }
+  .ts { color:var(--muted); font-size:12px; }
+  .pos { color:var(--pos); } .neg { color:var(--neg); }
+  .chart { width:100%; height:auto; display:block; }
+  .chartwrap { position:relative; }
+  .tip { position:absolute; pointer-events:none; background:#0b1018; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12.5px; color:var(--text); display:none; min-width:150px; box-shadow:0 6px 24px rgba(0,0,0,.5); z-index:5; }
+  .tip b { font-variant-numeric:tabular-nums; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin:4px 0 8px; }
+  .legend button { background:none; border:1px solid var(--line); color:var(--text); border-radius:999px; padding:3px 10px; cursor:pointer; font-size:12.5px; display:flex; align-items:center; gap:6px; }
+  .legend button.off { opacity:.4; }
+  .sw { width:14px; height:3px; border-radius:2px; display:inline-block; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  th:first-child, td:first-child, th.l, td.l { text-align:left; }
+  th { color:var(--muted); font-weight:600; cursor:pointer; user-select:none; position:sticky; top:0; background:var(--card); }
+  th.sorted::after { content:" ▾"; color:var(--focus); } th.sorted.asc::after { content:" ▴"; }
+  .scroll { overflow-x:auto; max-height:520px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; }
+  .filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0 10px; font-size:13px; color:var(--muted); }
+  .filters select, .filters input { background:var(--card2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:13px; }
+  .filters .count { margin-left:auto; }
+  .day header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .dow { font-weight:700; font-size:16px; } .date { color:var(--muted); font-size:12.5px; }
+  .daypnl { font-size:22px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
+  .daypnl small { display:block; font-size:11.5px; color:var(--muted); font-weight:400; }
+  .facts { margin:8px 0 6px; padding-left:18px; color:#c9d3e0; font-size:13.5px; }
+  .facts li { margin:2px 0; }
+  details summary { cursor:pointer; color:var(--focus); font-size:13.5px; }
+  ul.trades { font-size:13px; padding-left:18px; margin:6px 0; }
+  ul.trades li { margin:3px 0; } .sym { font-weight:700; }
+  .note { border-left:3px solid var(--amber); padding:6px 10px; margin:8px 0 0; color:#dfe6f0; font-size:13.5px; background:#141a24; border-radius:0 8px 8px 0; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:820px) { .grid2 { grid-template-columns:1fr; } }
+  .kv { display:grid; grid-template-columns:max-content 1fr; gap:4px 14px; font-size:13.5px; }
+  .kv div:nth-child(odd) { color:var(--muted); }
+  .lock { color:var(--muted); font-size:12.5px; }
+  ol.lessons li, ul.next li { margin:6px 0; }
+  .bar-label { font-size:11px; fill:var(--text); }
+  .axis { font-size:11px; fill:var(--muted); }
+  code { color:var(--focus); font-size:12.5px; }
+  footer { margin-top:40px; color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">PAPER ONLY</span><span class="badge blue">WEEK 1 · DAILY PAPER TRADING TEST</span>
+  <h1>QuantScout Paper Trading — Week 1 Report<br><span class="meta">Nov 09 – Nov 13, 2026 · 5 sessions · Alpaca paper account</span></h1>
+  <p class="meta">Generated 2026-11-21 · Alpaca Trading API (orders, account activities, portfolio history) and Alpaca Market Data (IEX feed) pulled 2026-11-21; order, client, and asset identifiers removed · all times US Eastern · figures exclude paper cash deposits</p>
+  <p class="lead">Week 1 of daily paper trading closed up $273.67 (+4.53%) on a $6,046.91 starting book, ahead of SPY (+2.57%) and QQQ (+3.61%). The book traded 23 round trips across 20 symbols, winning 12 of them; a 1.94 profit factor came from a few large winners (MRVL, CEG, TER, OKLO) outrunning many small losers. The two red days, Thursday and Friday, were driven by a two-night hold in TEM that gapped down and a cluster of tight bracket stops in EAT.</p>
+
+  <div class="tiles"><div class="tile"><div class="tl">Week P&amp;L (equity, ex-deposit)</div><div class="tv pos">+$273.67</div><div class="ts">+4.53% on $6,046.91 starting equity</div></div><div class="tile"><div class="tl">Realized on closed trades</div><div class="tv pos">+$274.64</div><div class="ts">23 round trips · 18 symbols</div></div><div class="tile"><div class="tl">Win rate</div><div class="tv ">52%</div><div class="ts">12 winners · 11 losers</div></div><div class="tile"><div class="tl">Profit factor</div><div class="tv ">1.94</div><div class="ts">gross +$567 / −$292</div></div><div class="tile"><div class="tl">Avg win / avg loss</div><div class="tv ">+$47.23 / -$26.55</div><div class="ts">payoff ratio 1.78</div></div><div class="tile"><div class="tl">SPY · QQQ same week</div><div class="tv ">+2.57% · +3.61%</div><div class="ts">close-to-close from the prior Friday</div></div><div class="tile"><div class="tl">Avg intraday hold</div><div class="tv ">4.3 h</div><div class="ts">19 intraday · 4 overnight round trips</div></div><div class="tile"><div class="tl">Capital deployed</div><div class="tv ">$43,043</div><div class="ts">sum of entry notional across round trips</div></div></div>
+
+  <h2>Equity curve vs. the market</h2>
+  <div class="card">
+    <p class="meta">Hourly account equity, indexed to 100 at the prior Friday close ($6,046.91). The $3,000 paper deposit on 2026-11-13 is removed so the line shows trading only. SPY and QQQ are daily closes indexed the same way.</p>
+    <div class="legend" id="eqLegend"></div>
+    <div class="chartwrap"><svg id="eqChart" class="chart" viewBox="0 0 1060 340" role="img" aria-label="Equity curve indexed to 100 versus SPY and QQQ"></svg><div class="tip" id="eqTip"></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Daily P&L on equity</h3>
+      <p class="meta">Close-to-close change in deposit-adjusted equity. Includes mark-to-market on anything held overnight. Click a bar to filter the trade log.</p>
+      <div class="chartwrap"><svg id="dayChart" class="chart" viewBox="0 0 520 260" role="img" aria-label="Daily profit and loss bars"></svg><div class="tip" id="dayTip"></div></div>
+    </div>
+    <div class="card">
+      <h3>Round trips ranked by P&L</h3>
+      <p class="meta">Every closed trade of the week, FIFO-paired from fills. Hover for entry and exit.</p>
+      <div class="chartwrap"><svg id="tradeChart" class="chart" viewBox="0 0 520 546" role="img" aria-label="Trades ranked by profit and loss"></svg><div class="tip" id="tradeTip"></div></div>
+    </div>
+  </div>
+
+  <h2>What it did, day by day</h2>
+  
+        <article class="card day" data-date="2026-11-09">
+          <header>
+            <div><div class="dow">Monday</div><div class="date">November 09, 2026</div></div>
+            <div class="daypnl pos">+$187.75<small>+3.10% on equity</small></div>
+          </header>
+          <ul class="facts"><li>First fill 9:52 AM ET, last fill 3:09 PM ET</li><li>9 filled orders (4 buys, 5 sells)</li><li>Opened: ABNB, CEG, NVDA, OKLO</li><li>Regulatory fees -$0.16</li></ul>
+          <details><summary>4 round trips · realized +$187.90</summary><ul class="trades"><li><span class='sym'>NVDA</span> long 10 sh · in 9:52 AM @ $178.58 → out 3:07 PM @ $177.07 · <span class='neg'>-$15.08</span></li><li><span class='sym'>ABNB</span> long 10 sh · in 11:50 AM @ $193.98 → out 3:08 PM @ $192.90 · <span class='neg'>-$10.82</span></li><li><span class='sym'>CEG</span> long 10 sh · in 9:56 AM @ $259.95 → out 3:09 PM @ $274.14 · <span class='pos'>+$141.92</span></li><li><span class='sym'>OKLO</span> long 25 sh · in 9:53 AM @ $24.32 → out 3:09 PM @ $27.19 · <span class='pos'>+$71.88</span></li></ul></details>
+          <p class="note">Clean intraday test: four names bought between 9:52 and 11:50 AM, all four flattened between 3:07 and 3:09 PM. CEG (+$141.92) and OKLO (+$71.88) carried the day while NVDA and ABNB lost $26 combined. A 0.0004-share LITE remnant from the October book was also cleaned up.</p>
+        </article>
+        <article class="card day" data-date="2026-11-10">
+          <header>
+            <div><div class="dow">Tuesday</div><div class="date">November 10, 2026</div></div>
+            <div class="daypnl pos">+$43.37<small>+0.70% on equity</small></div>
+          </header>
+          <ul class="facts"><li>First fill 9:51 AM ET, last fill 3:51 PM ET</li><li>5 filled orders (4 buys, 1 sells)</li><li>Opened: JNJ, MRVL, NET, NRC</li><li>Held overnight into the next session: JNJ, MRVL, NRC</li><li>Regulatory fees -$0.08</li></ul>
+          <details><summary>1 round trip · realized +$52.17</summary><ul class="trades"><li><span class='sym'>NET</span> long 10 sh · in 9:51 AM @ $301.05 → out 3:51 PM @ $306.26 · <span class='pos'>+$52.17</span></li></ul></details>
+          <p class="note">First overnight holds of the test. NET was sold at 3:51 PM for +$52.17, but NRC, JNJ and MRVL were carried into Wednesday, so the day&#x27;s equity gain includes their mark-to-market rather than only realized P&amp;L.</p>
+        </article>
+        <article class="card day" data-date="2026-11-11">
+          <header>
+            <div><div class="dow">Wednesday</div><div class="date">November 11, 2026</div></div>
+            <div class="daypnl pos">+$216.13<small>+3.44% on equity</small></div>
+          </header>
+          <ul class="facts"><li>First fill 9:32 AM ET, last fill 2:53 PM ET</li><li>14 filled orders (6 buys, 8 sells)</li><li>Opened: CEG, FTNT, MRCY, TEM, TER, VSTM</li><li>Closed positions carried in from a prior day: JNJ, MRVL, NRC</li><li>Held overnight into the next session: TEM</li><li>Regulatory fees -$0.28</li></ul>
+          <details><summary>8 round trips · realized +$251.01</summary><ul class="trades"><li><span class='sym'>MRVL</span> long 10 sh · in 11:17 AM @ $154.83 → out 2:48 PM @ $170.34 · <span class='pos'>+$155.10</span> · <em>overnight</em></li><li><span class='sym'>TER</span> long 10 sh · in 9:59 AM @ $258.37 → out 2:48 PM @ $266.19 · <span class='pos'>+$78.20</span></li><li><span class='sym'>CEG</span> long 10 sh · in 9:55 AM @ $273.30 → out 2:49 PM @ $275.32 · <span class='pos'>+$20.25</span></li><li><span class='sym'>VSTM</span> long 50 sh · in 9:49 AM @ $8.98 → out 2:50 PM @ $9.09 · <span class='pos'>+$5.62</span></li><li><span class='sym'>NRC</span> long 10 sh · in 9:52 AM @ $26.73 → out 2:50 PM @ $27.02 · <span class='pos'>+$2.83</span> · <em>overnight</em></li><li><span class='sym'>FTNT</span> long 10 sh · in 9:42 AM @ $128.04 → out 2:51 PM @ $128.10 · <span class='pos'>+$0.57</span></li><li><span class='sym'>MRCY</span> long 10 sh · in 9:44 AM @ $87.64 → out 2:51 PM @ $87.89 · <span class='pos'>+$2.56</span></li><li><span class='sym'>JNJ</span> long 10 sh · in 10:22 AM @ $281.33 → out 2:53 PM @ $279.91 · <span class='neg'>-$14.13</span> · <em>overnight</em></li></ul></details>
+          <p class="note">Best day of the week. Six names opened in the first 90 minutes, then the whole book except TEM was flattened between 2:48 and 2:53 PM. MRVL, held from Tuesday, produced +$155.10, the week&#x27;s largest winner, and TER added +$78.20. Seven of eight round trips were profitable. TEM was carried overnight.</p>
+        </article>
+        <article class="card day" data-date="2026-11-12">
+          <header>
+            <div><div class="dow">Thursday</div><div class="date">November 12, 2026</div></div>
+            <div class="daypnl neg">-$97.48<small>-1.50% on equity</small></div>
+          </header>
+          <ul class="facts"><li>First fill 9:56 AM ET, last fill 3:53 PM ET</li><li>12 filled orders (6 buys, 6 sells)</li><li>Opened: AAPL, ABNB, GOOGL, JKHY, NVDA, TSLA</li><li>Regulatory fees -$0.34</li></ul>
+          <details><summary>6 round trips · realized -$61.75</summary><ul class="trades"><li><span class='sym'>TSLA</span> long 10 sh · in 9:58 AM @ $394.10 → out 10:26 AM @ $389.98 · <span class='neg'>-$41.29</span></li><li><span class='sym'>GOOGL</span> long 10 sh · in 9:58 AM @ $296.00 → out 3:43 PM @ $299.33 · <span class='pos'>+$33.25</span></li><li><span class='sym'>NVDA</span> long 10 sh · in 10:23 AM @ $164.32 → out 3:44 PM @ $164.55 · <span class='pos'>+$2.34</span></li><li><span class='sym'>JKHY</span> long 10 sh · in 9:57 AM @ $176.62 → out 3:44 PM @ $176.37 · <span class='neg'>-$2.50</span></li><li><span class='sym'>ABNB</span> long 10 sh · in 9:56 AM @ $182.18 → out 3:53 PM @ $181.16 · <span class='neg'>-$10.20</span></li><li><span class='sym'>AAPL</span> long 10 sh · in 9:57 AM @ $358.87 → out 3:53 PM @ $354.53 · <span class='neg'>-$43.34</span></li></ul></details>
+          <p class="note">Six new names at the open. TSLA was cut 28 minutes after entry for -$41.29 and AAPL lost -$43.34 into the close; GOOGL (+$33.25) was the only meaningful winner. Two of six round trips won. TEM was held a second night.</p>
+        </article>
+        <article class="card day" data-date="2026-11-13">
+          <header>
+            <div><div class="dow">Friday</div><div class="date">November 13, 2026</div></div>
+            <div class="daypnl neg">-$76.10<small>-1.19% on equity</small></div>
+          </header>
+          <ul class="facts"><li>First fill 9:33 AM ET, last fill 11:55 AM ET</li><li>7 filled orders (3 buys, 4 sells)</li><li>Opened: EAT</li><li>Closed positions carried in from a prior day: TEM</li><li>Paper cash deposit of $3,000 added (excluded from all P&amp;L figures)</li><li>Regulatory fees -$0.11</li></ul>
+          <details><summary>4 round trips · realized -$154.69</summary><ul class="trades"><li><span class='sym'>TEM</span> long 10 sh · in 9:32 AM @ $83.76 → out 9:33 AM @ $71.36 · <span class='neg'>-$124.00</span> · <em>overnight</em></li><li><span class='sym'>EAT</span> long 10 sh · in 9:33 AM @ $200.50 → out 10:03 AM @ $199.26 · <span class='neg'>-$12.44</span></li><li><span class='sym'>EAT</span> long 5 sh · in 10:38 AM @ $200.02 → out 11:53 AM @ $197.00 · <span class='neg'>-$15.10</span></li><li><span class='sym'>EAT</span> short 5 sh · in 11:53 AM @ $196.84 → out 11:55 AM @ $197.48 · <span class='neg'>-$3.15</span></li></ul></details>
+          <p class="note">TEM gapped down and the OCO stop at $71.40 fired at 9:33 AM for -$124.00 (-14.8%), the worst trade of the week and the cost of two nights of exposure. The rest of the session was three EAT attempts with OCO brackets (10 long, 5 long, 5 short), all stopped within minutes to an hour for a combined -$30.69. First use of brackets and the first short of the test. A $3,000 paper deposit landed at 11:34 AM and is excluded from every figure here.</p>
+        </article>
+
+  <h2>Trade log</h2>
+  <div class="card">
+    <div class="filters">
+      <label>Day <select id="fDay"><option value="">All</option><option value="2026-11-09">Mon Nov 09</option><option value="2026-11-10">Tue Nov 10</option><option value="2026-11-11">Wed Nov 11</option><option value="2026-11-12">Thu Nov 12</option><option value="2026-11-13">Fri Nov 13</option></select></label>
+      <label>Outcome <select id="fOut"><option value="">All</option><option value="win">Winners</option><option value="loss">Losers</option></select></label>
+      <label>Hold <select id="fHold"><option value="">All</option><option value="intraday">Intraday</option><option value="overnight">Overnight</option></select></label>
+      <label>Symbol <input id="fSym" placeholder="e.g. CEG" size="8"></label>
+      <span class="count" id="fCount"></span>
+    </div>
+    <div class="scroll"><table id="tradeTable">
+      <thead><tr>
+        <th class="l" data-k="exit_t">Closed</th><th class="l" data-k="symbol">Symbol</th><th class="l" data-k="dir">Side</th><th data-k="qty">Qty</th>
+        <th class="l" data-k="entry_t">Entry</th><th data-k="entry">Entry $</th><th class="l" data-k="exit_t">Exit</th><th data-k="exit">Exit $</th>
+        <th data-k="hold_min">Hold</th><th data-k="pnl">P&L $</th><th data-k="pnl_pct">P&L %</th>
+      </tr></thead><tbody></tbody>
+      <tfoot><tr id="tfoot"></tr></tfoot>
+    </table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>By symbol</h3>
+      <table><thead><tr><th class="l">Symbol</th><th>Round trips</th><th>Wins</th><th>Net P&L</th></tr></thead><tbody><tr><td>CEG</td><td>2</td><td>2/2</td><td class='pos'>+$162.17</td></tr><tr><td>MRVL</td><td>1</td><td>1/1</td><td class='pos'>+$155.10</td></tr><tr><td>TER</td><td>1</td><td>1/1</td><td class='pos'>+$78.20</td></tr><tr><td>OKLO</td><td>1</td><td>1/1</td><td class='pos'>+$71.88</td></tr><tr><td>NET</td><td>1</td><td>1/1</td><td class='pos'>+$52.17</td></tr><tr><td>GOOGL</td><td>1</td><td>1/1</td><td class='pos'>+$33.25</td></tr><tr><td>VSTM</td><td>1</td><td>1/1</td><td class='pos'>+$5.62</td></tr><tr><td>NRC</td><td>1</td><td>1/1</td><td class='pos'>+$2.83</td></tr><tr><td>MRCY</td><td>1</td><td>1/1</td><td class='pos'>+$2.56</td></tr><tr><td>FTNT</td><td>1</td><td>1/1</td><td class='pos'>+$0.57</td></tr><tr><td>JKHY</td><td>1</td><td>0/1</td><td class='neg'>-$2.50</td></tr><tr><td>NVDA</td><td>2</td><td>1/2</td><td class='neg'>-$12.74</td></tr><tr><td>JNJ</td><td>1</td><td>0/1</td><td class='neg'>-$14.13</td></tr><tr><td>ABNB</td><td>2</td><td>0/2</td><td class='neg'>-$21.02</td></tr><tr><td>EAT</td><td>3</td><td>0/3</td><td class='neg'>-$30.70</td></tr><tr><td>TSLA</td><td>1</td><td>0/1</td><td class='neg'>-$41.29</td></tr><tr><td>AAPL</td><td>1</td><td>0/1</td><td class='neg'>-$43.34</td></tr><tr><td>TEM</td><td>1</td><td>0/1</td><td class='neg'>-$124.00</td></tr></tbody></table>
+    </div>
+    <div class="card">
+      <h3>Execution facts</h3>
+      <div class="kv">
+        <div>Orders submitted</div><div>49 (44 market, 5 limit/OCO)</div>
+        <div>Order entry path</div><div>43 via Alpaca web dashboard, 6 via API key</div>
+        <div>Bracket / OCO exits</div><div>5 submitted, 5 canceled before the limit leg filled</div>
+        <div>Canceled orders</div><div>5</div>
+        <div>Best trade</div><div class="pos">MRVL +$155.10 (+10.02%)</div>
+        <div>Worst trade</div><div class="neg">TEM -$124.00 (-14.80%)</div>
+        <div>Regulatory fees (REG + CAT)</div><div>-$0.97</div>
+        <div>Open at week end</div><div>none</div>
+        <div>Residual closes (pre-week lots)</div><div>LITE 0.000405977 sh</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Context and takeaways</h2>
+  <div class="card">
+    <h3>Before week 1</h3><p>From Oct 20 to Nov 6 the same paper account ran a very different, concentrated book (FICO, SNDK, LITE, including fractional shares on margin). Equity fell from about $36,000 on Oct 28 to $6,046.90 at the Nov 6 close, roughly -83%, and $210.03 of margin interest was charged on Nov 2. A $3,000 paper deposit on Nov 3 is inside that window. Week 1 of the daily test therefore started on Nov 9 from a flat book and a $6,046.91 base.</p>
+    <h3>Since week 1</h3><p>Since week 1 the cadence has been lighter: Nov 16 traded SPOT (stopped at breakeven, -$0.09) and TM (-$25.33); Nov 17 to 19 had no fills; Nov 20 bought INTU (19 sh), FICO (20 sh, closed +$404.60) and EPAM (closed +$23.59). INTU was still open when this report was pulled, showing -$316.47 unrealized against account equity of $9,368.67.</p>
+    <h3>What the week showed</h3>
+    <ol class="lessons"><li>Intraday round trips did the work: 19 same-day trades netted +$254.84 (10 winners), while the 4 overnight holds netted only +$19.80 with a wide spread (MRVL +$155.10 versus TEM -$124.00). Overnight exposure added variance, not edge.</li><li>The win rate was 52% but the profit factor was 1.94 because the average winner ($47.23) was 1.8x the average loser ($26.55). The edge this week came from letting CEG, TER, OKLO and MRVL run, not from being right often.</li><li>Sizing was a flat 10 shares (25 for OKLO, 50 for VSTM) regardless of price, so notional per trade ranged from $267 to $3,941. Risk per trade was uncontrolled; TSLA and AAPL at ~$3,500 to $3,900 notional were the two largest intraday losers.</li><li>Every one of the 49 week-1 orders was entered by hand: 43 through the Alpaca web dashboard and 6 through an API key for the OCO brackets. This was a human-in-the-loop test of the signals, not an autonomous bot run, so execution timing (first fills 9:32 to 11:50 AM, exits clustered 2:48 to 3:51 PM) reflects the operator&#x27;s schedule.</li><li>OCO brackets were introduced only on Friday. All five stop legs that could trigger did trigger, at 1% to 2% below entry on EAT, which suggests the stops were inside normal intraday noise for a $200 stock with a 3% daily range.</li><li>Fees were immaterial on paper ($0.97 of REG and CAT fees for the week) but the margin interest charged in late October (-$210.03) is a reminder that the account is running 4x buying power.</li></ol>
+    <h3>Suggested focus for week 2</h3>
+    <ul class="next"><li>Move to equal-notional or ATR-based sizing (for example 5% of equity per position, which at ~$6,300 is about $315) so every trade risks roughly the same amount.</li><li>Default to flat-by-close; if a position is carried overnight, it must carry a stop. The TEM hold had no stop until Friday morning.</li><li>Attach an OCO bracket to every entry but set the stop from the 14-day ATR (roughly 1.0 to 1.5 ATR) rather than a fixed percentage.</li><li>Log the signal that produced each entry (Depot Score, Momentum Pro, or discretionary) at order time so week 2&#x27;s report can attribute P&amp;L by strategy.</li><li>Keep deposits out of performance by recording them as they happen; this report subtracts them automatically from the equity curve.</li><li>Regenerate this report every Friday after the close from a fresh Alpaca pull using scripts/weekly_paper_report.py.</li></ul>
+  </div>
+
+  <h2>Account snapshot (as pulled)</h2>
+  <div class="card kv">
+    <div>Account status</div><div>ACTIVE · paper · margin multiplier 4x · shorting on · fractional on</div>
+    <div>Equity (latest)</div><div>$9,368.67 (balance as of 2026-11-19)</div>
+    <div>Cash / long market value</div><div>$4,178.78 / $5,189.89</div>
+    <div>Open positions now</div><div>INTU 19 sh @ $289.81, unrealized -$316.47</div>
+    <div>Accrued fees</div><div>$37.69</div>
+  </div>
+
+  <p class="lock">Method: round trips are FIFO-paired from filled orders in the Alpaca order history (filled quantity × filled average price), so partial fills are consolidated. Week P&L is the change in deposit-adjusted account equity and therefore includes overnight mark-to-market and fees. SPY and QQQ use IEX daily closes. Paper trading only. Not trade advice.</p>
+  <footer>QuantScout NLP · paper trading weekly report · regenerate with <code>python3 scripts/weekly_paper_report.py --bundle docs/data/&lt;bundle&gt;.json --out docs/&lt;report&gt;.html</code></footer>
+</div>
+
+<script id="data" type="application/json">{"sessions": [{"date": "2026-11-09", "label": "Mon Nov 09"}, {"date": "2026-11-10", "label": "Tue Nov 10"}, {"date": "2026-11-11", "label": "Wed Nov 11"}, {"date": "2026-11-12", "label": "Thu Nov 12"}, {"date": "2026-11-13", "label": "Fri Nov 13"}], "hourly": [{"x": 0.0, "date": "2026-11-09", "label": "Mon 9:30 AM", "adj": 6046.91, "raw": 6046.91}, {"x": 0.1538, "date": "2026-11-09", "label": "Mon 10:30 AM", "adj": 6135.77, "raw": 6135.77}, {"x": 0.3077, "date": "2026-11-09", "label": "Mon 11:30 AM", "adj": 6152.79, "raw": 6152.79}, {"x": 0.4615, "date": "2026-11-09", "label": "Mon 12:30 PM", "adj": 6240.61, "raw": 6240.61}, {"x": 0.6154, "date": "2026-11-09", "label": "Mon 1:30 PM", "adj": 6219.58, "raw": 6219.58}, {"x": 0.7692, "date": "2026-11-09", "label": "Mon 2:30 PM", "adj": 6233.72, "raw": 6233.72}, {"x": 0.9231, "date": "2026-11-09", "label": "Mon 3:30 PM", "adj": 6234.83, "raw": 6234.83}, {"x": 1.0, "date": "2026-11-10", "label": "Tue 9:30 AM", "adj": 6234.66, "raw": 6234.66}, {"x": 1.1538, "date": "2026-11-10", "label": "Tue 10:30 AM", "adj": 6259.13, "raw": 6259.13}, {"x": 1.3077, "date": "2026-11-10", "label": "Tue 11:30 AM", "adj": 6270.53, "raw": 6270.53}, {"x": 1.4615, "date": "2026-11-10", "label": "Tue 12:30 PM", "adj": 6178.92, "raw": 6178.92}, {"x": 1.6154, "date": "2026-11-10", "label": "Tue 1:30 PM", "adj": 6165.47, "raw": 6165.47}, {"x": 1.7692, "date": "2026-11-10", "label": "Tue 2:30 PM", "adj": 6220.27, "raw": 6220.27}, {"x": 1.9231, "date": "2026-11-10", "label": "Tue 3:30 PM", "adj": 6272.97, "raw": 6272.97}, {"x": 2.0, "date": "2026-11-11", "label": "Wed 9:30 AM", "adj": 6376.23, "raw": 6376.23}, {"x": 2.1538, "date": "2026-11-11", "label": "Wed 10:30 AM", "adj": 6419.59, "raw": 6419.59}, {"x": 2.3077, "date": "2026-11-11", "label": "Wed 11:30 AM", "adj": 6543.73, "raw": 6543.73}, {"x": 2.4615, "date": "2026-11-11", "label": "Wed 12:30 PM", "adj": 6570.55, "raw": 6570.55}, {"x": 2.6154, "date": "2026-11-11", "label": "Wed 1:30 PM", "adj": 6580.6, "raw": 6580.6}, {"x": 2.7692, "date": "2026-11-11", "label": "Wed 2:30 PM", "adj": 6504.2, "raw": 6504.2}, {"x": 2.9231, "date": "2026-11-11", "label": "Wed 3:30 PM", "adj": 6497.15, "raw": 6497.15}, {"x": 3.0, "date": "2026-11-12", "label": "Thu 9:30 AM", "adj": 6449.36, "raw": 6449.36}, {"x": 3.1538, "date": "2026-11-12", "label": "Thu 10:30 AM", "adj": 6391.3, "raw": 6391.3}, {"x": 3.3077, "date": "2026-11-12", "label": "Thu 11:30 AM", "adj": 6458.84, "raw": 6458.84}, {"x": 3.4615, "date": "2026-11-12", "label": "Thu 12:30 PM", "adj": 6453.81, "raw": 6453.81}, {"x": 3.6154, "date": "2026-11-12", "label": "Thu 1:30 PM", "adj": 6450.64, "raw": 6450.64}, {"x": 3.7692, "date": "2026-11-12", "label": "Thu 2:30 PM", "adj": 6413.94, "raw": 6413.94}, {"x": 3.9231, "date": "2026-11-12", "label": "Thu 3:30 PM", "adj": 6397.39, "raw": 6397.39}, {"x": 4.0, "date": "2026-11-13", "label": "Fri 9:30 AM", "adj": 6397.78, "raw": 6397.78}, {"x": 4.1538, "date": "2026-11-13", "label": "Fri 10:30 AM", "adj": 6338.94, "raw": 6338.94}, {"x": 4.3077, "date": "2026-11-13", "label": "Fri 11:30 AM", "adj": 6333.64, "raw": 6333.64}, {"x": 4.4615, "date": "2026-11-13", "label": "Fri 12:30 PM", "adj": 6320.69, "raw": 9320.69}, {"x": 4.6154, "date": "2026-11-13", "label": "Fri 1:30 PM", "adj": 6320.69, "raw": 9320.69}, {"x": 4.7692, "date": "2026-11-13", "label": "Fri 2:30 PM", "adj": 6320.69, "raw": 9320.69}, {"x": 4.9231, "date": "2026-11-13", "label": "Fri 3:30 PM", "adj": 6320.69, "raw": 9320.69}], "base": 6046.91, "days": [{"date": "2026-11-09", "dow": "Mon", "pnl": 187.75, "ret": 0.031048915892579847, "equity": 6234.66, "realized": 187.9, "trades": 4, "wins": 2, "symbols": ["ABNB", "CEG", "LITE", "NVDA", "OKLO"], "orders": 9, "fees": -0.16}, {"date": "2026-11-10", "dow": "Tue", "pnl": 43.37, "ret": 0.006956273477623461, "equity": 6278.03, "realized": 52.17, "trades": 1, "wins": 1, "symbols": ["JNJ", "MRVL", "NET", "NRC"], "orders": 5, "fees": -0.08}, {"date": "2026-11-11", "dow": "Wed", "pnl": 216.13, "ret": 0.034426404461272105, "equity": 6494.16, "realized": 251.01, "trades": 8, "wins": 7, "symbols": ["CEG", "FTNT", "JNJ", "MRCY", "MRVL", "NRC", "TEM", "TER", "VSTM"], "orders": 14, "fees": -0.28}, {"date": "2026-11-12", "dow": "Thu", "pnl": -97.48, "ret": -0.015010409352402707, "equity": 6396.68, "realized": -61.75, "trades": 6, "wins": 2, "symbols": ["AAPL", "ABNB", "GOOGL", "JKHY", "NVDA", "TSLA"], "orders": 12, "fees": -0.34}, {"date": "2026-11-13", "dow": "Fri", "pnl": -76.1, "ret": -0.011896796463165323, "equity": 6320.58, "realized": -154.69, "trades": 4, "wins": 0, "symbols": ["EAT", "TEM"], "orders": 7, "fees": -0.11}], "bench": {"SPY": {"pts": [{"x": 1.0, "date": "2026-11-09", "v": 1.0235518085395703}, {"x": 2.0, "date": "2026-11-10", "v": 1.0197579548545008}, {"x": 3.0, "date": "2026-11-11", "v": 1.0331792221920044}, {"x": 4.0, "date": "2026-11-12", "v": 1.0295893391351645}, {"x": 5.0, "date": "2026-11-13", "v": 1.0256595050312756}]}, "QQQ": {"pts": [{"x": 1.0, "date": "2026-11-09", "v": 1.0342216330697385}, {"x": 2.0, "date": "2026-11-10", "v": 1.0282031357133063}, {"x": 3.0, "date": "2026-11-11", "v": 1.051941917691335}, {"x": 4.0, "date": "2026-11-12", "v": 1.0485822248632508}, {"x": 5.0, "date": "2026-11-13", "v": 1.0361109841385931}]}}, "trades": [{"symbol": "NVDA", "dir": "long", "qty": 10.0, "entry_t": "2026-11-09T09:52:47.915000-05:00", "entry_label": "Mon Nov 9, 9:52 AM", "entry": 178.5785, "exit_t": "2026-11-09T15:07:50.665000-05:00", "exit_label": "Mon Nov 9, 3:07 PM", "exit": 177.0705, "pnl": -15.08, "pnl_pct": -0.00844446559916217, "hold_min": 315, "overnight": false, "exit_date": "2026-11-09", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "ABNB", "dir": "long", "qty": 10.0, "entry_t": "2026-11-09T11:50:19.901000-05:00", "entry_label": "Mon Nov 9, 11:50 AM", "entry": 193.982, "exit_t": "2026-11-09T15:08:35.878000-05:00", "exit_label": "Mon Nov 9, 3:08 PM", "exit": 192.9, "pnl": -10.82, "pnl_pct": -0.005577837118907907, "hold_min": 198, "overnight": false, "exit_date": "2026-11-09", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "CEG", "dir": "long", "qty": 10.0, "entry_t": "2026-11-09T09:56:32.838000-05:00", "entry_label": "Mon Nov 9, 9:56 AM", "entry": 259.948, "exit_t": "2026-11-09T15:09:07.211000-05:00", "exit_label": "Mon Nov 9, 3:09 PM", "exit": 274.1402, "pnl": 141.92, "pnl_pct": 0.0545962654069277, "hold_min": 313, "overnight": false, "exit_date": "2026-11-09", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "OKLO", "dir": "long", "qty": 25.0, "entry_t": "2026-11-09T09:53:49.939000-05:00", "entry_label": "Mon Nov 9, 9:53 AM", "entry": 24.315, "exit_t": "2026-11-09T15:09:37.260000-05:00", "exit_label": "Mon Nov 9, 3:09 PM", "exit": 27.19, "pnl": 71.88, "pnl_pct": 0.11823976968949208, "hold_min": 316, "overnight": false, "exit_date": "2026-11-09", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "NET", "dir": "long", "qty": 10.0, "entry_t": "2026-11-10T09:51:57.445000-05:00", "entry_label": "Tue Nov 10, 9:51 AM", "entry": 301.048, "exit_t": "2026-11-10T15:51:14.756000-05:00", "exit_label": "Tue Nov 10, 3:51 PM", "exit": 306.265, "pnl": 52.17, "pnl_pct": 0.01732946241130977, "hold_min": 359, "overnight": false, "exit_date": "2026-11-10", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "MRVL", "dir": "long", "qty": 10.0, "entry_t": "2026-11-10T11:17:43.054000-05:00", "entry_label": "Tue Nov 10, 11:17 AM", "entry": 154.83, "exit_t": "2026-11-11T14:48:18.321000-05:00", "exit_label": "Wed Nov 11, 2:48 PM", "exit": 170.3398, "pnl": 155.1, "pnl_pct": 0.10017309306981839, "hold_min": 1651, "overnight": true, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "TER", "dir": "long", "qty": 10.0, "entry_t": "2026-11-11T09:59:43.464000-05:00", "entry_label": "Wed Nov 11, 9:59 AM", "entry": 258.37, "exit_t": "2026-11-11T14:48:46.245000-05:00", "exit_label": "Wed Nov 11, 2:48 PM", "exit": 266.1902, "pnl": 78.2, "pnl_pct": 0.030267407206718926, "hold_min": 289, "overnight": false, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "CEG", "dir": "long", "qty": 10.0, "entry_t": "2026-11-11T09:55:47.809000-05:00", "entry_label": "Wed Nov 11, 9:55 AM", "entry": 273.295, "exit_t": "2026-11-11T14:49:19.251000-05:00", "exit_label": "Wed Nov 11, 2:49 PM", "exit": 275.3202, "pnl": 20.25, "pnl_pct": 0.0074102709526336335, "hold_min": 294, "overnight": false, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "VSTM", "dir": "long", "qty": 50.0, "entry_t": "2026-11-11T09:49:56.846000-05:00", "entry_label": "Wed Nov 11, 9:49 AM", "entry": 8.9777, "exit_t": "2026-11-11T14:50:10.869000-05:00", "exit_label": "Wed Nov 11, 2:50 PM", "exit": 9.0902, "pnl": 5.62, "pnl_pct": 0.012527707542020792, "hold_min": 300, "overnight": false, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "NRC", "dir": "long", "qty": 10.0, "entry_t": "2026-11-10T09:52:59.317000-05:00", "entry_label": "Tue Nov 10, 9:52 AM", "entry": 26.735, "exit_t": "2026-11-11T14:50:35.713000-05:00", "exit_label": "Wed Nov 11, 2:50 PM", "exit": 27.0183, "pnl": 2.83, "pnl_pct": 0.010596596222180682, "hold_min": 1738, "overnight": true, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "FTNT", "dir": "long", "qty": 10.0, "entry_t": "2026-11-11T09:42:03.354000-05:00", "entry_label": "Wed Nov 11, 9:42 AM", "entry": 128.04, "exit_t": "2026-11-11T14:51:20.998000-05:00", "exit_label": "Wed Nov 11, 2:51 PM", "exit": 128.0974, "pnl": 0.57, "pnl_pct": 0.0004482974070603033, "hold_min": 309, "overnight": false, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "MRCY", "dir": "long", "qty": 10.0, "entry_t": "2026-11-11T09:44:25.884000-05:00", "entry_label": "Wed Nov 11, 9:44 AM", "entry": 87.635, "exit_t": "2026-11-11T14:51:21.139000-05:00", "exit_label": "Wed Nov 11, 2:51 PM", "exit": 87.8911, "pnl": 2.56, "pnl_pct": 0.0029225765961088113, "hold_min": 307, "overnight": false, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "JNJ", "dir": "long", "qty": 10.0, "entry_t": "2026-11-10T10:22:57.700000-05:00", "entry_label": "Tue Nov 10, 10:22 AM", "entry": 281.3265, "exit_t": "2026-11-11T14:53:11.518000-05:00", "exit_label": "Wed Nov 11, 2:53 PM", "exit": 279.913, "pnl": -14.13, "pnl_pct": -0.005024411137948252, "hold_min": 1710, "overnight": true, "exit_date": "2026-11-11", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "TSLA", "dir": "long", "qty": 10.0, "entry_t": "2026-11-12T09:58:43.901000-05:00", "entry_label": "Thu Nov 12, 9:58 AM", "entry": 394.1045, "exit_t": "2026-11-12T10:26:50.535000-05:00", "exit_label": "Thu Nov 12, 10:26 AM", "exit": 389.9751, "pnl": -41.29, "pnl_pct": -0.010477931614584395, "hold_min": 28, "overnight": false, "exit_date": "2026-11-12", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "GOOGL", "dir": "long", "qty": 10.0, "entry_t": "2026-11-12T09:58:11.660000-05:00", "entry_label": "Thu Nov 12, 9:58 AM", "entry": 296.005, "exit_t": "2026-11-12T15:43:48.093000-05:00", "exit_label": "Thu Nov 12, 3:43 PM", "exit": 299.33, "pnl": 33.25, "pnl_pct": 0.011232918362865453, "hold_min": 346, "overnight": false, "exit_date": "2026-11-12", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "NVDA", "dir": "long", "qty": 10.0, "entry_t": "2026-11-12T10:23:03.585000-05:00", "entry_label": "Thu Nov 12, 10:23 AM", "entry": 164.3164, "exit_t": "2026-11-12T15:44:16.132000-05:00", "exit_label": "Thu Nov 12, 3:44 PM", "exit": 164.5505, "pnl": 2.34, "pnl_pct": 0.0014247513592526401, "hold_min": 321, "overnight": false, "exit_date": "2026-11-12", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "JKHY", "dir": "long", "qty": 10.0, "entry_t": "2026-11-12T09:57:07.883000-05:00", "entry_label": "Thu Nov 12, 9:57 AM", "entry": 176.62, "exit_t": "2026-11-12T15:44:52.264000-05:00", "exit_label": "Thu Nov 12, 3:44 PM", "exit": 176.37, "pnl": -2.5, "pnl_pct": -0.001415468236892764, "hold_min": 348, "overnight": false, "exit_date": "2026-11-12", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "ABNB", "dir": "long", "qty": 10.0, "entry_t": "2026-11-12T09:56:23.747000-05:00", "entry_label": "Thu Nov 12, 9:56 AM", "entry": 182.1803, "exit_t": "2026-11-12T15:53:22.238000-05:00", "exit_label": "Thu Nov 12, 3:53 PM", "exit": 181.16, "pnl": -10.2, "pnl_pct": -0.005600495772594467, "hold_min": 357, "overnight": false, "exit_date": "2026-11-12", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "AAPL", "dir": "long", "qty": 10.0, "entry_t": "2026-11-12T09:57:42.818000-05:00", "entry_label": "Thu Nov 12, 9:57 AM", "entry": 358.8655, "exit_t": "2026-11-12T15:53:53.581000-05:00", "exit_label": "Thu Nov 12, 3:53 PM", "exit": 354.5315, "pnl": -43.34, "pnl_pct": -0.012076948048781518, "hold_min": 356, "overnight": false, "exit_date": "2026-11-12", "entry_src": "dashboard", "exit_src": "dashboard"}, {"symbol": "TEM", "dir": "long", "qty": 10.0, "entry_t": "2026-11-11T09:32:48.107000-05:00", "entry_label": "Wed Nov 11, 9:32 AM", "entry": 83.76, "exit_t": "2026-11-13T09:33:52.384000-05:00", "exit_label": "Fri Nov 13, 9:33 AM", "exit": 71.3602, "pnl": -124.0, "pnl_pct": -0.14803975644699144, "hold_min": 2881, "overnight": true, "exit_date": "2026-11-13", "entry_src": "dashboard", "exit_src": "access_key"}, {"symbol": "EAT", "dir": "long", "qty": 10.0, "entry_t": "2026-11-13T09:33:17.733000-05:00", "entry_label": "Fri Nov 13, 9:33 AM", "entry": 200.5042, "exit_t": "2026-11-13T10:03:48.033000-05:00", "exit_label": "Fri Nov 13, 10:03 AM", "exit": 199.26, "pnl": -12.44, "pnl_pct": -0.00620535629677586, "hold_min": 31, "overnight": false, "exit_date": "2026-11-13", "entry_src": "dashboard", "exit_src": "access_key"}, {"symbol": "EAT", "dir": "long", "qty": 5.0, "entry_t": "2026-11-13T10:38:52.815000-05:00", "entry_label": "Fri Nov 13, 10:38 AM", "entry": 200.02, "exit_t": "2026-11-13T11:53:00.780000-05:00", "exit_label": "Fri Nov 13, 11:53 AM", "exit": 197.0, "pnl": -15.1, "pnl_pct": -0.015098490150984953, "hold_min": 74, "overnight": false, "exit_date": "2026-11-13", "entry_src": "dashboard", "exit_src": "access_key"}, {"symbol": "EAT", "dir": "short", "qty": 5.0, "entry_t": "2026-11-13T11:53:26.373000-05:00", "entry_label": "Fri Nov 13, 11:53 AM", "entry": 196.845, "exit_t": "2026-11-13T11:55:28.753000-05:00", "exit_label": "Fri Nov 13, 11:55 AM", "exit": 197.4758, "pnl": -3.15, "pnl_pct": -0.0032045518047194165, "hold_min": 2, "overnight": false, "exit_date": "2026-11-13", "entry_src": "dashboard", "exit_src": "access_key"}]}</script>
+<script>
+(function(){
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const fmt$ = (x, s=true) => (x>0&&s?'+':x<0?'−':'') + '$' + Math.abs(x).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtP = (x, nd=2) => (x>0?'+':x<0?'−':'') + (Math.abs(x)*100).toFixed(nd) + '%';
+  const COL = {pos:'#3987e5', neg:'#e66767', eq:'#3987e5', SPY:'#d95926', QQQ:'#199e70', grid:'#1a2230', text:'#e8edf4', muted:'#93a0b3'};
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent){ const e=document.createElementNS(svgNS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); if(parent) parent.appendChild(e); return e; }
+  function showTip(tip, host, x, y, html){ tip.innerHTML = html; tip.style.display='block'; const r=host.getBoundingClientRect(); const tw=tip.offsetWidth, th=tip.offsetHeight; let left=x+14, top=y-th/2; if(left+tw>r.width) left=x-tw-14; if(top<0) top=4; if(top+th>r.height) top=r.height-th-4; tip.style.left=left+'px'; tip.style.top=top+'px'; }
+  function hideTip(tip){ tip.style.display='none'; }
+  function pt(svg, evt){ const r=svg.getBoundingClientRect(); const vb=svg.viewBox.baseVal; return {x:(evt.clientX-r.left)*vb.width/r.width, y:(evt.clientY-r.top)*vb.height/r.height, px:evt.clientX-r.left, py:evt.clientY-r.top}; }
+
+  // ---------------------------------------------------------------- equity curve (indexed)
+  (function(){
+    const svg=document.getElementById('eqChart'), tip=document.getElementById('eqTip'), host=svg.parentElement;
+    const W=1060,H=340,m={l:54,r:70,t:16,b:44};
+    const base=D.base;
+    const eq=D.hourly.map(p=>({sx:p.x, date:p.date, v:p.adj/base*100, adj:p.adj, raw:p.raw, label:p.label}));
+    const bench={}; for(const k in D.bench) bench[k]=D.bench[k].pts.map(p=>({sx:p.x, date:p.date, v:p.v*100}));
+    const series=[{key:'Equity',color:COL.eq,pts:eq,on:true},{key:'SPY',color:COL.SPY,pts:bench.SPY||[],on:true},{key:'QQQ',color:COL.QQQ,pts:bench.QQQ||[],on:true}];
+    // x positions are session-relative (session index + fraction of the 9:30-16:00 ET session), precomputed
+    // server-side so the chart is identical in every browser timezone; nights are compressed out.
+    const days=D.sessions;
+    const xOf=(sx)=> m.l + sx*(W-m.l-m.r)/days.length;
+    function draw(){
+      svg.innerHTML='';
+      const on=series.filter(s=>s.on);
+      let vals=[]; on.forEach(s=>s.pts.forEach(p=>vals.push(p.v))); vals.push(100);
+      let lo=Math.min(...vals), hi=Math.max(...vals); const pad=(hi-lo)*0.12||1; lo-=pad; hi+=pad;
+      const y=v=>m.t+(hi-v)*(H-m.t-m.b)/(hi-lo);
+      // grid
+      const ticks=5; for(let i=0;i<=ticks;i++){ const v=lo+(hi-lo)*i/ticks; el('line',{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:COL.grid,'stroke-width':1},svg); const tx=el('text',{x:m.l-8,y:y(v)+4,'text-anchor':'end',class:'axis'},svg); tx.textContent=v.toFixed(1); }
+      // baseline 100
+      el('line',{x1:m.l,x2:W-m.r,y1:y(100),y2:y(100),stroke:COL.muted,'stroke-width':1,'stroke-dasharray':'4 4'},svg);
+      // day labels + separators
+      days.forEach((d,i)=>{ const x0=m.l+i*(W-m.l-m.r)/days.length; if(i>0) el('line',{x1:x0,x2:x0,y1:m.t,y2:H-m.b,stroke:COL.grid},svg); const tx=el('text',{x:x0+(W-m.l-m.r)/days.length/2,y:H-m.b+18,'text-anchor':'middle',class:'axis'},svg); tx.textContent=d.label; });
+      el('text',{x:m.l-8,y:m.t-4,'text-anchor':'end',class:'axis'},svg).textContent='index';
+      on.forEach(s=>{
+        const pts=s.pts.map(p=>({x:xOf(p.sx),y:y(p.v),p}));
+        if(!pts.length) return;
+        const d=pts.map((q,i)=>(i?'L':'M')+q.x.toFixed(1)+' '+q.y.toFixed(1)).join(' ');
+        el('path',{d,fill:'none',stroke:s.color,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},svg);
+        if(s.key!=='Equity') pts.forEach(q=>el('circle',{cx:q.x,cy:q.y,r:4,fill:s.color,stroke:'#10141c','stroke-width':2},svg));
+        const last=pts[pts.length-1]; const lab=el('text',{x:last.x+8,y:last.y+4,class:'axis',fill:COL.text},svg); lab.textContent=s.key+' '+last.p.v.toFixed(1); lab.setAttribute('fill',COL.text);
+      });
+      // crosshair layer
+      const cross=el('line',{x1:0,x2:0,y1:m.t,y2:H-m.b,stroke:COL.muted,'stroke-width':1,opacity:0},svg);
+      const dot=el('circle',{r:5,fill:COL.eq,stroke:'#10141c','stroke-width':2,opacity:0},svg);
+      svg.onmousemove=(e)=>{ const q=pt(svg,e); const eqPts=eq.map(p=>({x:xOf(p.sx),p})); let best=null,bd=1e9; eqPts.forEach(o=>{ const d=Math.abs(o.x-q.x); if(d<bd){bd=d;best=o;} }); if(!best) return; cross.setAttribute('x1',best.x); cross.setAttribute('x2',best.x); cross.setAttribute('opacity',1); dot.setAttribute('cx',best.x); dot.setAttribute('cy',y(best.p.v)); dot.setAttribute('opacity',1);
+        const b=[]; for(const k of ['SPY','QQQ']) { const s=series.find(z=>z.key===k); if(!s.on) continue; const same=s.pts.filter(z=>z.date===best.p.date)[0]; if(same) b.push(`<div><span class="sw" style="background:${s.color}"></span> ${k} close <b>${same.v.toFixed(2)}</b></div>`); }
+        showTip(tip,host,q.px,q.py,`<div style="color:${COL.muted}">${best.p.label} ET</div><div><span class="sw" style="background:${COL.eq}"></span> Equity <b>${best.p.v.toFixed(2)}</b> · ${fmt$(best.p.adj,false)}</div><div style="color:${COL.muted}">vs start ${fmt$(best.p.adj-base)} (${fmtP(best.p.adj/base-1)})</div>${b.join('')}`); };
+      svg.onmouseleave=()=>{ hideTip(tip); cross.setAttribute('opacity',0); dot.setAttribute('opacity',0); };
+    }
+    const leg=document.getElementById('eqLegend');
+    series.forEach(s=>{ const b=document.createElement('button'); b.innerHTML=`<span class="sw" style="background:${s.color}"></span>${s.key}${s.key==='Equity'?' (hourly, deposit-adjusted)':' (daily close)'}`; b.onclick=()=>{ s.on=!s.on; b.classList.toggle('off',!s.on); draw(); }; leg.appendChild(b); });
+    draw();
+  })();
+
+  // ---------------------------------------------------------------- daily bars
+  (function(){
+    const svg=document.getElementById('dayChart'), tip=document.getElementById('dayTip'), host=svg.parentElement;
+    const W=520,H=260,m={l:56,r:12,t:18,b:40};
+    const vals=D.days.map(d=>d.pnl); const mx=Math.max(...vals.map(Math.abs))*1.25||1;
+    const y=v=>m.t+(mx-v)*(H-m.t-m.b)/(2*mx);
+    const bw=(W-m.l-m.r)/D.days.length;
+    for(let i=-2;i<=2;i++){ const v=mx*i/2; el('line',{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:i===0?COL.muted:COL.grid},svg); const t=el('text',{x:m.l-6,y:y(v)+4,'text-anchor':'end',class:'axis'},svg); t.textContent=(v>0?'+':v<0?'−':'')+'$'+Math.abs(v).toFixed(0); }
+    D.days.forEach((d,i)=>{ const x=m.l+i*bw+bw*0.18, w=bw*0.64; const y0=y(0), y1=y(d.pnl); const top=Math.min(y0,y1), h=Math.max(2,Math.abs(y1-y0)); const r=4;
+      const path = d.pnl>=0 ? `M${x} ${y0} V${top+r} Q${x} ${top} ${x+r} ${top} H${x+w-r} Q${x+w} ${top} ${x+w} ${top+r} V${y0} Z` : `M${x} ${y0} V${y0+h-r} Q${x} ${y0+h} ${x+r} ${y0+h} H${x+w-r} Q${x+w} ${y0+h} ${x+w} ${y0+h-r} V${y0} Z`;
+      const p=el('path',{d:path,fill:d.pnl>=0?COL.pos:COL.neg,style:'cursor:pointer'},svg);
+      const lab=el('text',{x:x+w/2,y:d.pnl>=0?top-6:y0+h+14,'text-anchor':'middle',class:'bar-label'},svg); lab.textContent=fmt$(d.pnl);
+      const ax=el('text',{x:x+w/2,y:H-m.b+18,'text-anchor':'middle',class:'axis'},svg); ax.textContent=d.dow+' '+d.date.slice(5).replace('-','/');
+      const hit=el('rect',{x:m.l+i*bw,y:m.t,width:bw,height:H-m.t-m.b,fill:'transparent',style:'cursor:pointer'},svg);
+      const over=(e)=>{ const q=pt(svg,e); showTip(tip,host,q.px,q.py,`<div style="color:${COL.muted}">${d.dow} ${d.date}</div><div>Equity P&L <b>${fmt$(d.pnl)}</b> (${fmtP(d.ret)})</div><div>Realized on closes <b>${fmt$(d.realized)}</b></div><div>${d.trades} round trips · ${d.wins} wins · ${d.orders} fills</div><div style="color:${COL.muted}">${d.symbols.join(', ')}</div><div style="color:${COL.muted}">Close equity ${fmt$(d.equity,false)} · fees ${fmt$(d.fees)}</div><div style="color:${COL.muted};margin-top:4px">click to filter the trade log</div>`); };
+      [p,hit].forEach(n=>{ n.onmousemove=over; n.onmouseleave=()=>hideTip(tip); n.onclick=()=>{ const s=document.getElementById('fDay'); s.value=(s.value===d.date?'':d.date); s.dispatchEvent(new Event('change')); document.getElementById('tradeTable').scrollIntoView({behavior:'smooth',block:'start'}); }; });
+    });
+  })();
+
+  // ---------------------------------------------------------------- trade bars ranked
+  (function(){
+    const svg=document.getElementById('tradeChart'), tip=document.getElementById('tradeTip'), host=svg.parentElement;
+    const T=[...D.trades].sort((a,b)=>b.pnl-a.pnl);
+    const W=520, rowH=22, m={l:84,r:70,t:14,b:24}; const H=Math.max(260, rowH*T.length+m.t+m.b); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const mx=Math.max(...T.map(t=>Math.abs(t.pnl)))||1; const x0=m.l+(W-m.l-m.r)/2; const sc=(W-m.l-m.r)/2/mx;
+    el('line',{x1:x0,x2:x0,y1:m.t,y2:H-m.b,stroke:COL.muted},svg);
+    T.forEach((t,i)=>{ const yy=m.t+i*rowH; const w=Math.max(2,Math.abs(t.pnl)*sc); const x=t.pnl>=0?x0:x0-w; const r=Math.min(4,w/2);
+      const path = t.pnl>=0 ? `M${x} ${yy+3} H${x+w-r} Q${x+w} ${yy+3} ${x+w} ${yy+3+r} V${yy+rowH-3-r} Q${x+w} ${yy+rowH-3} ${x+w-r} ${yy+rowH-3} H${x} Z` : `M${x+w} ${yy+3} H${x+r} Q${x} ${yy+3} ${x} ${yy+3+r} V${yy+rowH-3-r} Q${x} ${yy+rowH-3} ${x+r} ${yy+rowH-3} H${x+w} Z`;
+      el('path',{d:path,fill:t.pnl>=0?COL.pos:COL.neg,opacity:t.overnight?0.75:1},svg);
+      if(t.overnight){ el('path',{d:path,fill:'none',stroke:'#e8edf4','stroke-width':1,'stroke-dasharray':'3 2'},svg); }
+      const l=el('text',{x:m.l-6,y:yy+rowH/2+4,'text-anchor':'end',class:'axis',fill:COL.text},svg); l.textContent=t.symbol+(t.dir==='short'?' (short)':''); l.setAttribute('fill',COL.text);
+      const v=el('text',{x:t.pnl>=0?x+w+6:x-6,y:yy+rowH/2+4,'text-anchor':t.pnl>=0?'start':'end',class:'bar-label'},svg); v.textContent=fmt$(t.pnl);
+      const hit=el('rect',{x:0,y:yy,width:W,height:rowH,fill:'transparent'},svg);
+      hit.onmousemove=(e)=>{ const q=pt(svg,e); showTip(tip,host,q.px,q.py,`<div><b>${t.symbol}</b> ${t.dir} ${t.qty} sh ${t.overnight?'· <em>overnight</em>':''}</div><div style="color:${COL.muted}">In ${t.entry_label} @ $${t.entry.toFixed(2)}</div><div style="color:${COL.muted}">Out ${t.exit_label} @ $${t.exit.toFixed(2)}</div><div>P&L <b>${fmt$(t.pnl)}</b> (${fmtP(t.pnl_pct)}) · held ${(t.hold_min/60).toFixed(1)} h</div>`); };
+      hit.onmouseleave=()=>hideTip(tip);
+    });
+    const cap=el('text',{x:W-m.r,y:H-6,'text-anchor':'end',class:'axis'},svg); cap.textContent='dashed outline = held overnight';
+  })();
+
+  // ---------------------------------------------------------------- trade table
+  (function(){
+    const tb=document.querySelector('#tradeTable tbody'), foot=document.getElementById('tfoot'), cnt=document.getElementById('fCount');
+    const fDay=document.getElementById('fDay'), fOut=document.getElementById('fOut'), fHold=document.getElementById('fHold'), fSym=document.getElementById('fSym');
+    let sortK='exit_t', asc=true;
+    function rows(){ let T=D.trades.filter(t=>(!fDay.value||t.exit_date===fDay.value)&&(!fOut.value||(fOut.value==='win'?t.pnl>0:t.pnl<0))&&(!fHold.value||(fHold.value==='overnight'?t.overnight:!t.overnight))&&(!fSym.value||t.symbol.toLowerCase().includes(fSym.value.trim().toLowerCase())));
+      T.sort((a,b)=>{ let x=a[sortK], y=b[sortK]; if(typeof x==='string'&&typeof y==='string') return asc?x.localeCompare(y):y.localeCompare(x); return asc?x-y:y-x; }); return T; }
+    function render(){ const T=rows(); tb.innerHTML=T.map(t=>`<tr><td class="l">${t.exit_label.split(',')[0]}</td><td class="l"><b>${t.symbol}</b></td><td class="l">${t.dir}</td><td>${t.qty}</td><td class="l">${t.entry_label.split(', ')[1]}${t.overnight?' <span style="color:#f5c15c">('+t.entry_label.split(',')[0]+')</span>':''}</td><td>$${t.entry.toFixed(2)}</td><td class="l">${t.exit_label.split(', ')[1]}</td><td>$${t.exit.toFixed(2)}</td><td>${t.hold_min>=60?(t.hold_min/60).toFixed(1)+' h':t.hold_min+' m'}</td><td class="${t.pnl>0?'pos':t.pnl<0?'neg':''}">${fmt$(t.pnl)}</td><td class="${t.pnl>0?'pos':t.pnl<0?'neg':''}">${fmtP(t.pnl_pct)}</td></tr>`).join('');
+      const sum=T.reduce((a,t)=>a+t.pnl,0), w=T.filter(t=>t.pnl>0).length; cnt.textContent=`${T.length} of ${D.trades.length} round trips · ${w} wins · net ${fmt$(sum)}`;
+      foot.innerHTML=`<td class="l" colspan="9" style="color:#93a0b3">Total for current filter</td><td class="${sum>0?'pos':sum<0?'neg':''}"><b>${fmt$(sum)}</b></td><td></td>`;
+      document.querySelectorAll('#tradeTable th').forEach(th=>{ th.classList.toggle('sorted',th.dataset.k===sortK); th.classList.toggle('asc',th.dataset.k===sortK&&asc); }); }
+    document.querySelectorAll('#tradeTable th').forEach(th=>th.onclick=()=>{ if(sortK===th.dataset.k) asc=!asc; else {sortK=th.dataset.k; asc=true;} render(); });
+    [fDay,fOut,fHold].forEach(s=>s.onchange=render); fSym.oninput=render; render();
+  })();
+})();
+</script>
+</body>
+</html>
